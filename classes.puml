@@ -1,0 +1,63 @@
+@startuml greendy-classes
+
+class TechMap {}
+
+class TechStage {}
+
+class ParamValue {
+	value
+}
+
+class WorkStationBooking {
+	start: Timestamp
+	finish: Timestamp
+}
+
+class WorkStation {
+	name: string
+}
+
+class WorkStationType {
+	name: string
+}
+
+enum ParamType {
+	BOOLEAN
+	NUMBER
+	STRING
+	TIMESTAMP
+}
+
+class Nomenclature {
+	name: string
+}
+
+class Order {}
+
+class OrderItem {
+	quantity: int
+}
+
+class OrderItemSubquantity {
+	quantity: int
+}
+
+TechMap "1" *-- "1..*" OrderItemSubquantity
+TechMap "1" *-- "*" TechStage
+
+OrderItemSubquantity "*" o-- "1" OrderItem
+
+Order "1" *-- "*" OrderItem
+
+OrderItem "*" -- "1" Nomenclature
+
+Nomenclature "*" -- "*" WorkStationType
+
+WorkStationType [name: string] -- "0..1" ParamType
+
+WorkStation "1" -- "*" WorkStationBooking
+
+TechStage "0..1" o-l- "1" WorkStationBooking
+TechStage [name: string] -- "0..1" ParamValue
+
+@enduml
