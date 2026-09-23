@@ -1,23 +1,23 @@
-@startuml greendy-classes
+' UC-03
 
-class TechMap {}
+class TechMap $uc03 {}
 
-class TechStage {}
+class TechStage $uc03 {}
 
-class ParamValue {
+class ParamValue $uc03 {
 	value
 }
 
-class WorkStationBooking {
+class WorkStationBooking $uc03 {
 	start: Timestamp
 	finish: Timestamp
 }
 
-class WorkStation {
+class WorkStation $uc03 {
 	name: string
 }
 
-class WorkStationType {
+class WorkStationType $uc03 {
 	name: string
 }
 
@@ -28,17 +28,17 @@ enum ParamType {
 	TIMESTAMP
 }
 
-class Nomenclature {
+class Nomenclature $uc03 {
 	name: string
 }
 
-class Order {}
+class Order $uc03 {}
 
-class OrderItem {
+class OrderItem $uc03 {
 	quantity: int
 }
 
-class OrderItemSubquantity {
+class OrderItemSubquantity $uc03 {
 	quantity: int
 }
 
@@ -59,5 +59,3 @@ WorkStation "1" -- "*" WorkStationBooking
 
 TechStage "0..1" o-l- "1" WorkStationBooking
 TechStage [name: string] -- "0..1" ParamValue
-
-@enduml
