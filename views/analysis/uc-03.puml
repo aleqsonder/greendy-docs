@@ -1,0 +1,7 @@
+@startuml UC-03
+!include model/classes.iuml
+
+remove *
+restore $uc03
+
+@enduml
