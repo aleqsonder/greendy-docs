@@ -1,39 +1,28 @@
 ' UC-03
 
 class TechMap $uc03 {}
-
 class TechStage $uc03 {}
-
-class ParamValue $uc03 {
-	value
-}
 
 class WorkStationBooking $uc03 {
 	start: Timestamp
 	finish: Timestamp
 }
 
-class WorkStation $uc03 {
-	name: string
-}
+class WorkStation $uc03 {}
+class WorkStationType $uc03 {}
+class WorkStationParamType $uc03 {}
 
-class WorkStationType $uc03 {
-	name: string
-}
-
-enum ParamType {
-	BOOLEAN
-	NUMBER
-	STRING
-	TIMESTAMP
+class WorkStationParam $uc03 {
+	value
 }
 
 class Nomenclature $uc03 {
 	name: string
 }
 
-class Order $uc03 {}
+class Customer $uc03 {}
 
+class Order $uc03 {}
 class OrderItem $uc03 {
 	quantity: int
 }
@@ -42,20 +31,23 @@ class OrderItemSubquantity $uc03 {
 	quantity: int
 }
 
-TechMap "1" *-- "1..*" OrderItemSubquantity
-TechMap "1" *-- "*" TechStage
+TechMap "1" -- "1..*" OrderItemSubquantity
+TechMap "1" --  TechStage
 
-OrderItemSubquantity "*" o-- "1" OrderItem
+OrderItemSubquantity -- "1" OrderItem
 
-Order "1" *-- "*" OrderItem
+TechStage [paramName: string] -- WorkStationParam
+TechStage "0..1" - "1" WorkStationBooking
 
-OrderItem "*" -- "1" Nomenclature
+Customer "1" -- Order
+Order "1" -- OrderItem
+OrderItem -- "1" Nomenclature
 
-Nomenclature "*" -- "*" WorkStationType
+Nomenclature "1" -- WorkStationType
 
-WorkStationType [name: string] -- "0..1" ParamType
+WorkStation "1" -- WorkStationBooking
+WorkStation - "1" WorkStationType
 
-WorkStation "1" -- "*" WorkStationBooking
+WorkStationType [paramName: string] -- "0..1" WorkStationParamType
 
-TechStage "0..1" o-l- "1" WorkStationBooking
-TechStage [name: string] -- "0..1" ParamValue
+WorkStationParam - "1" WorkStationParamType
