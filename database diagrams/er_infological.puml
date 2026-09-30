@@ -1,0 +1,219 @@
+@startuml er_infological
+
+title Infological ER Model (Logical View)
+
+hide circle
+hide empty members
+
+skinparam linetype ortho
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam nodesep 60
+skinparam ranksep 70
+
+skinparam entity {
+  BackgroundColor #F7FBF5
+  BorderColor #5B8C51
+  FontStyle bold
+}
+
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #C9B458
+}
+
+' ---------------- Access control ----------------
+package "Users & access" #F2F2F2 {
+  entity "Role" as Role {
+    name
+    --
+    description
+  }
+
+  entity "User" as User {
+    login
+    --
+    password (hashed, salted)
+    full name
+    description
+  }
+
+  entity "Access token" as Token {
+    token UUID
+    --
+    name
+    creation date
+    expiration date
+  }
+}
+
+' ---------------- Customers & orders ----------------
+package "Customers & orders" #F2F2F2 {
+  entity "Customer" as Customer {
+    name
+    --
+    description
+  }
+
+  entity "Contact type" as ContactType {
+    name
+    --
+    validation pattern (regex)
+    description
+  }
+
+  entity "Customer contact" as Contact {
+    name
+    value
+  }
+
+  entity "Order" as Order {
+    creation time
+    delivery date
+    description
+  }
+
+  entity "Order item" as OrderItem {
+    quantity
+    description
+  }
+
+  entity "Nomenclature\n(product)" as Nomenclature {
+    name
+    --
+    description
+  }
+}
+
+' ---------------- Production planning ----------------
+package "Technological maps" #F2F2F2 {
+  entity "Technological map" as TechMap {
+    creation time
+  }
+
+  entity "Order item allocation" as Allocation {
+    allocated quantity
+  }
+
+  entity "Recipe stage" as RecipeStage {
+    name
+    --
+    description
+  }
+
+  entity "Technological map stage" as TechMapStage {
+    description
+  }
+
+  entity "Stage parameter setpoint" as ParamValue {
+    planned value
+    minimum value
+    maximum value
+    string value
+    timestamp value
+  }
+}
+
+' ---------------- Equipment ----------------
+package "Work stations" #F2F2F2 {
+  entity "Work station type" as WSType {
+    name
+    --
+    description
+  }
+
+  entity "Work station" as WorkStation {
+    name
+    --
+    description
+    availability flag
+  }
+
+  entity "Work station booking" as Booking {
+    start time
+    finish time
+    description
+  }
+
+  entity "Work station parameter" as WSParam {
+    name
+    --
+    description
+  }
+
+  entity "Parameter data type" as ParamType {
+    name
+    --
+    description
+  }
+}
+
+' ---------------- Monitoring ----------------
+package "Telemetry & alerts" #F2F2F2 {
+  entity "Telemetry reading" as Telemetry {
+    measurement time
+    measured value
+  }
+
+  entity "Alert" as Alert {
+  }
+}
+
+' ================= Relationships =================
+Role        ||--o{ User         : is assigned to
+User        ||--o{ Token        : owns
+
+Customer    ||--o{ Contact      : has
+ContactType ||--o{ Contact      : classifies
+Customer    ||--o{ Order        : places
+User        ||--o{ Order        : creates
+
+Order        ||--|{ OrderItem   : contains
+Nomenclature ||--o{ OrderItem   : is ordered in
+
+User          ||--o{ TechMap    : creates
+TechMap       ||--|{ Allocation : covers
+OrderItem     ||--o{ Allocation : is fulfilled by
+
+Nomenclature  ||--o{ RecipeStage  : is produced through
+WSType        ||--o{ RecipeStage  : is required by
+TechMap       ||--|{ TechMapStage : consists of
+RecipeStage   ||--o{ TechMapStage : is instantiated as
+
+WSType      ||--o{ WorkStation : classifies
+WSType      ||--o{ WSParam     : defines
+ParamType   ||--o{ WSParam     : types
+WorkStation ||--o{ Booking     : is reserved by
+User        ||--o{ Booking     : creates
+TechMapStage ||--|| Booking    : is scheduled by
+
+TechMapStage ||--o{ ParamValue : is configured with
+WSParam      ||--o{ ParamValue : is set in
+
+ParamValue ||--o{ Telemetry : is monitored by
+Telemetry  ||--o{ Alert     : triggers
+Alert      }o--o{ User      : is unread by
+
+' ================= Business rules =================
+note bottom of Allocation
+  Allocated quantity must not exceed the
+  quantity of the order item that is still
+  unallocated across all technological maps.
+end note
+
+note bottom of ContactType
+  e.g. phone, e-mail, website,
+  Telegram, postal address
+end note
+
+note bottom of ParamType
+  Bool, Number, String, Timestamp, …
+end note
+
+note right of Booking
+  Each technological map stage occupies
+  exactly one booking of a work station
+  whose type matches the recipe stage.
+end note
+
+@enduml
