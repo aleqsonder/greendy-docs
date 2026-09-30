@@ -1,0 +1,303 @@
+@startuml er_datalogical
+
+title Datalogical ER Model (PostgreSQL)
+
+hide circle
+hide empty members
+
+skinparam linetype ortho
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam nodesep 55
+skinparam ranksep 65
+
+skinparam entity {
+  BackgroundColor #F7FBF5
+  BorderColor #5B8C51
+  FontName Monospaced
+}
+
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #C9B458
+}
+
+' ---------------- Users & access ----------------
+package "Users & access" #F2F2F2 {
+  entity roles {
+    * PK(id) : SERIAL
+    --
+    * name : VARCHAR(64) <<UQ>>
+    description : TEXT
+  }
+
+  entity app_users {
+    * PK(id) : BIGSERIAL
+    --
+    * login : VARCHAR(64) <<UQ>>
+    * password : VARCHAR(255)  -- hash
+    * salt : VARCHAR(64)
+    * name : VARCHAR(255)
+    * FK(role_id) : INTEGER
+    description : TEXT
+  }
+
+  entity user_tokens {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(user_id) : BIGINT
+    * token_uuid : UUID <<UQ>>
+    name : VARCHAR(128)
+    * creation_date : TIMESTAMPTZ <<DF now()>>
+    * expiration_date : TIMESTAMPTZ
+    <<CK expiration_date > creation_date>>
+  }
+}
+
+' ---------------- Customers & orders ----------------
+package "Customers & orders" #F2F2F2 {
+  entity customers {
+    * PK(id) : BIGSERIAL
+    --
+    * name : VARCHAR(255)
+    description : TEXT
+  }
+
+  entity contact_types {
+    * PK(id) : SERIAL
+    --
+    * name : VARCHAR(64) <<UQ>>
+    regex : TEXT
+    description : TEXT
+  }
+
+  entity customer_contacts {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(customer_id) : BIGINT
+    * FK(contact_type_id) : INTEGER
+    name : VARCHAR(255)
+    * value : VARCHAR(512)
+  }
+
+  entity orders {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(customer_id) : BIGINT
+    * FK(creator_id) : BIGINT
+    delivery_date : DATE
+    description : TEXT
+    * creation_timestamp : TIMESTAMPTZ <<DF now()>>
+  }
+
+  entity order_items {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(order_id) : BIGINT
+    * FK(nomenclature_id) : BIGINT
+    * quantity : NUMERIC(14,3) <<CK > 0>>
+    description : TEXT
+  }
+
+  entity nomenclatures {
+    * PK(id) : BIGSERIAL
+    --
+    * name : VARCHAR(255) <<UQ>>
+    description : TEXT
+  }
+}
+
+' ---------------- Technological maps ----------------
+package "Technological maps" #F2F2F2 {
+  entity techmaps {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(creator_id) : BIGINT
+    * creation_timestamp : TIMESTAMPTZ <<DF now()>>
+  }
+
+  entity techmap_order_items {
+    * PFK(techmap_id) : BIGINT
+    * PFK(order_item_id) : BIGINT
+    --
+    * quantity : NUMERIC(14,3) <<CK > 0>>
+  }
+
+  entity recipe_stages {
+    * PK(id) : BIGSERIAL
+    --
+    * name : VARCHAR(255)
+    description : TEXT
+    * FK(nomenclature_id) : BIGINT
+    * FK(work_station_type_id) : INTEGER
+  }
+
+  entity techmap_stages {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(techmap_id) : BIGINT
+    * FK(recipe_stage_id) : BIGINT
+    * FK(work_station_booking_id) : BIGINT <<UQ>>
+    description : TEXT
+  }
+
+  entity techmap_stage_param_values {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(techmap_stage_id) : BIGINT
+    * FK(work_station_param_id) : BIGINT
+    num_plan : NUMERIC(18,6)
+    num_min : NUMERIC(18,6)
+    num_max : NUMERIC(18,6)
+    string_value : TEXT
+    timestamp_value : TIMESTAMPTZ
+    <<UQ (techmap_stage_id, work_station_param_id)>>
+    <<CK num_min <= num_plan <= num_max>>
+  }
+}
+
+' ---------------- Work stations ----------------
+package "Work stations" #F2F2F2 {
+  entity work_station_types {
+    * PK(id) : SERIAL
+    --
+    * name : VARCHAR(128) <<UQ>>
+    description : TEXT
+  }
+
+  entity work_stations {
+    * PK(id) : BIGSERIAL
+    --
+    * name : VARCHAR(128) <<UQ>>
+    description : TEXT
+    * FK(type_id) : INTEGER
+    * is_available : BOOLEAN <<DF true>>
+  }
+
+  entity work_station_bookings {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(work_station_id) : BIGINT
+    description : TEXT
+    * FK(creator_id) : BIGINT
+    * start_timestamp : TIMESTAMPTZ
+    * finish_timestamp : TIMESTAMPTZ
+    <<CK finish_timestamp > start_timestamp>>
+  }
+
+  entity work_station_param_types {
+    * PK(id) : SERIAL
+    --
+    * name : VARCHAR(32) <<UQ>>
+    description : TEXT
+  }
+
+  entity work_station_params {
+    * PK(id) : BIGSERIAL
+    --
+    * name : VARCHAR(128)
+    description : TEXT
+    * FK(work_station_type_id) : INTEGER
+    * FK(param_type_id) : INTEGER
+    <<UQ (work_station_type_id, name)>>
+  }
+}
+
+' ---------------- Telemetry & alerts ----------------
+package "Telemetry & alerts" #F2F2F2 {
+  entity telemetry_items {
+    * PK(id) : BIGSERIAL
+    --
+    * measurement_timestamp : TIMESTAMPTZ
+    * FK(techmap_stage_param_id) : BIGINT
+    * num_value : DOUBLE PRECISION
+  }
+
+  entity alerts {
+    * PK(id) : BIGSERIAL
+    --
+    * FK(telemetry_item_id) : BIGINT
+  }
+
+  entity alert_unread_by {
+    * PFK(alert_id) : BIGINT
+    * PFK(app_user_id) : BIGINT
+  }
+}
+
+' ================= Foreign keys =================
+roles         ||--o{ app_users    : role_id
+app_users     ||--o{ user_tokens  : user_id
+
+customers     ||--o{ customer_contacts : customer_id
+contact_types ||--o{ customer_contacts : contact_type_id
+customers     ||--o{ orders            : customer_id
+app_users     ||--o{ orders            : creator_id
+
+orders        ||--|{ order_items  : order_id
+nomenclatures ||--o{ order_items  : nomenclature_id
+
+app_users     ||--o{ techmaps            : creator_id
+techmaps      ||--|{ techmap_order_items : techmap_id
+order_items   ||--o{ techmap_order_items : order_item_id
+
+nomenclatures      ||--o{ recipe_stages  : nomenclature_id
+work_station_types ||--o{ recipe_stages  : work_station_type_id
+techmaps           ||--|{ techmap_stages : techmap_id
+recipe_stages      ||--o{ techmap_stages : recipe_stage_id
+
+work_station_types       ||--o{ work_stations         : type_id
+work_station_types       ||--o{ work_station_params   : work_station_type_id
+work_station_param_types ||--o{ work_station_params   : param_type_id
+work_stations            ||--o{ work_station_bookings : work_station_id
+app_users                ||--o{ work_station_bookings : creator_id
+work_station_bookings    ||--|| techmap_stages        : work_station_booking_id
+
+techmap_stages      ||--o{ techmap_stage_param_values : techmap_stage_id
+work_station_params ||--o{ techmap_stage_param_values : work_station_param_id
+
+techmap_stage_param_values ||--o{ telemetry_items : techmap_stage_param_id
+telemetry_items            ||--o{ alerts          : telemetry_item_id
+alerts                     ||--o{ alert_unread_by : alert_id
+app_users                  ||--o{ alert_unread_by : app_user_id
+
+' ================= Implementation notes =================
+note right of techmap_order_items
+  quantity <= order_items.quantity
+             - SUM(quantity) already allocated
+  for the same order_item_id.
+  Cross-row rule: enforce with a trigger
+  (or in the service layer).
+end note
+
+note bottom of work_station_param_types
+  Seed values: Bool, Number,
+  String, Timestamp, …
+end note
+
+note bottom of contact_types
+  Seed values: tel, email, website,
+  telegram, post address, …
+  regex validates customer_contacts.value
+end note
+
+note bottom of work_station_bookings
+  Suggested: EXCLUDE USING gist
+  (work_station_id WITH =,
+   tstzrange(start_timestamp, finish_timestamp) WITH &&)
+  to prevent overlapping bookings.
+end note
+
+note bottom of telemetry_items
+  Index: (techmap_stage_param_id,
+          measurement_timestamp)
+end note
+
+legend right
+  <b><color:#B8860B><&key></color></b> primary key
+  <color:#4B55B5><&link-intact></color> foreign key
+  <b><color:#B8860B><&key></color><color:#4B55B5><&link-intact></color></b> PK + FK
+  * NOT NULL
+endlegend
+
+@enduml
