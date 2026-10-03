@@ -33,9 +33,7 @@ interface WorkStationParamInfoVisitor {
 	+ visitString(isMandatory: boolean, pattern: Regex): void
 	+ visitTimestamp(isMandatory: boolean, range: Range<Timestamp>): void
 }
-WorkStationParamInfoVisitor ..> Range
-WorkStationParamInfoVisitor <|-- WorkStationParamHtmlFormBuilder
-WorkStationParamInfoVisitor <|-- WorkStationParamValidatorBuilder
+WorkStationParamInfoVisitor ..> Range: <<use>>
 
 class Range<T> $uc03 {
 	- min: Border<T>
@@ -51,18 +49,6 @@ class Border<T> {
 	+ checkLower(value: T): boolean
 	+ checkUpper(value: T): boolean
 }
-
-class WorkStationParamHtmlFormBuilder $uc03 {
-	- paramName: string
-	- form: HtmlForm
-}
-note right: Visitor implementation example
-
-class WorkStationParamValidatorBuilder $uc03 {
-	- validator: WorkStationParamValidator
-	+ validator(): WorkStationParamValidator
-}
-WorkStationParamValidatorBuilder o--> WorkStationParamValidator: <<create>> validator
 
 class WorkStationBooleanParamInfo $uc03
 
@@ -106,44 +92,12 @@ WorkStationParamValue <|-- WorkStationStringParamValue
 WorkStationParamValue <|-- WorkStationTimestampParamValue
 
 interface WorkStationParamValueVisitor {
-	+ visitoNone(): void
+	+ visitNone(): void
 	+ visit(value: boolean): void
 	+ visit(value: double): void
 	+ visit(value: string): void
 	+ visit(value: Timestamp): void
 }
-WorkStationParamValueVisitor <|-- WorkStationParamSqlInsertQueryBuilder
-WorkStationParamValueVisitor <|-- WorkStationParamValidator
-
-class WorkStationParamSqlInsertQueryBuilder $uc03 {
-	- paramName: string
-	- query: SqlQuery
-}
-note right: Visitor implementation example
-
-abstract class WorkStationParamValidator $uc03 {
-	- isMandatory: boolean
-}
-WorkStationParamValidator <|-- WorkStationBooleanParamValidator
-WorkStationParamValidator <|-- WorkStationNumericParamValidator
-WorkStationParamValidator <|-- WorkStationStringParamValidator
-WorkStationParamValidator <|-- WorkStationTimestampParamValidator
-
-class WorkStationBooleanParamValidator $uc03
-
-class WorkStationNumericParamValidator $uc03 {
-	- range: Range<double>
-}
-WorkStationNumericParamValidator *--> Range: range
-
-class WorkStationStringParamValidator $uc03 {
-	- pattern: Regex
-}
-
-class WorkStationTimestampParamValidator $uc03 {
-	- range: Range<Timestamp>
-}
-WorkStationTimestampParamValidator *--> Range: range
 
 class WorkStationBooleanParamValue {
 	- value: boolean
