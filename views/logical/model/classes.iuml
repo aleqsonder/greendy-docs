@@ -34,6 +34,7 @@ interface WorkStationParamInfoVisitor {
 	+ visitTimestamp(isMandatory: boolean, range: Range<Timestamp>): void
 }
 WorkStationParamInfoVisitor ..> Range
+WorkStationParamInfoVisitor <|-- WorkStationParamHtmlFormBuilder
 
 class Range<T> $uc03 {
 	- min: Border<T>
@@ -49,6 +50,12 @@ class Border<T> {
 	+ checkLower(value: T): boolean
 	+ checkUpper(value: T): boolean
 }
+
+class WorkStationParamHtmlFormBuilder $uc03 {
+	- paramName: string
+	- form: HtmlForm
+}
+note right: Visitor implementation example
 
 class WorkStationBooleanParamInfo $uc03
 
@@ -97,6 +104,13 @@ interface WorkStationParamValueVisitor {
 	+ visit(value: string): void
 	+ visit(value: Timestamp): void
 }
+WorkStationParamValueVisitor <|-- WorkStationParamSqlInsertQueryBuilder
+
+class WorkStationParamSqlInsertQueryBuilder $uc03 {
+	- paramName: string
+	- query: SqlQuery
+}
+note right: Visitor implementation example
 
 class WorkStationBooleanParamValue {
 	- value: boolean
