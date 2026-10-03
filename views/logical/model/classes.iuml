@@ -16,7 +16,7 @@ class WorkStationDecl $uc03 {
 }
 WorkStationDecl [name: string] *--> WorkStationParamInfo: paramInfos
 
-abstract class WorkStationParamInfo {
+abstract class WorkStationParamInfo $uc03 {
 	- isMandatory: boolean
 	+ isMandatory(): boolean
 	+ accept(visitor: WorkStationParamInfoVisitor): void
@@ -27,7 +27,7 @@ WorkStationParamInfo <|-- WorkStationNumericParamInfo
 WorkStationParamInfo <|-- WorkStationStringParamInfo
 WorkStationParamInfo <|-- WorkStationTimestampParamInfo
 
-interface WorkStationParamInfoVisitor {
+interface WorkStationParamInfoVisitor $uc03 {
 	+ visitBoolean(isMandatory: boolean): void
 	+ visitNumber(isMandatory: boolean, range: Range<double>): void
 	+ visitString(isMandatory: boolean, pattern: Regex): void
@@ -43,7 +43,7 @@ class Range<T> $uc03 {
 Range *--> "1" Border: min
 Range *--> "1" Border: max
 
-class Border<T> {
+class Border<T> $uc03 {
 	- isInclusive: boolean
 	- value: T
 	+ checkLower(value: T): boolean
@@ -82,7 +82,7 @@ class TechStage $uc03
 TechStage [name: string] *--> WorkStationParamValue: paramValues
 TechStage *-> "1" WorkStationBooking
 
-interface WorkStationParamValue {
+interface WorkStationParamValue $uc03 {
 	+ accept(visitor: WorkStationParamValueVisitor): void
 }
 WorkStationParamValue ..> WorkStationParamValueVisitor: <<use>>
@@ -91,7 +91,7 @@ WorkStationParamValue <|-- WorkStationNumericParamValue
 WorkStationParamValue <|-- WorkStationStringParamValue
 WorkStationParamValue <|-- WorkStationTimestampParamValue
 
-interface WorkStationParamValueVisitor {
+interface WorkStationParamValueVisitor $uc03 {
 	+ visitNone(): void
 	+ visit(value: boolean): void
 	+ visit(value: double): void
@@ -99,19 +99,19 @@ interface WorkStationParamValueVisitor {
 	+ visit(value: Timestamp): void
 }
 
-class WorkStationBooleanParamValue {
+class WorkStationBooleanParamValue $uc03 {
 	- value: boolean
 }
 
-class WorkStationNumericParamValue {
+class WorkStationNumericParamValue $uc03 {
 	- value: double
 }
 
-class WorkStationStringParamValue {
+class WorkStationStringParamValue $uc03 {
 	- value: string
 }
 
-class WorkStationTimestampParamValue {
+class WorkStationTimestampParamValue $uc03 {
 	- value: Timestamp
 }
 
