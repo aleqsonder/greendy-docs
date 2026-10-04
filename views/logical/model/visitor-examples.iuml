@@ -1,0 +1,47 @@
+!include classes.iuml
+
+WorkStationParamInfoVisitor <|-- WorkStationParamHtmlFormBuilder
+WorkStationParamInfoVisitor <|-- WorkStationParamValidatorBuilder
+
+WorkStationParamValueVisitor <|-- WorkStationParamSqlInsertQueryBuilder
+WorkStationParamValueVisitor <|-- WorkStationParamValidator
+
+class WorkStationParamHtmlFormBuilder $uc03 {
+	- paramName: string
+	- form: HtmlForm
+}
+
+class WorkStationParamSqlInsertQueryBuilder $uc03 {
+	- paramName: string
+	- query: SqlQuery
+}
+
+class WorkStationParamValidatorBuilder $uc03 {
+	- validator: WorkStationParamValidator
+	+ validator(): WorkStationParamValidator
+}
+WorkStationParamValidatorBuilder o--> WorkStationParamValidator: <<create>> validator
+
+abstract class WorkStationParamValidator $uc03 {
+	- isMandatory: boolean
+}
+WorkStationParamValidator <|-- WorkStationBooleanParamValidator
+WorkStationParamValidator <|-- WorkStationNumericParamValidator
+WorkStationParamValidator <|-- WorkStationStringParamValidator
+WorkStationParamValidator <|-- WorkStationTimestampParamValidator
+
+class WorkStationBooleanParamValidator $uc03
+
+class WorkStationNumericParamValidator $uc03 {
+	- range: Range<double>
+}
+WorkStationNumericParamValidator *--> Range: range
+
+class WorkStationStringParamValidator $uc03 {
+	- pattern: Regex
+}
+
+class WorkStationTimestampParamValidator $uc03 {
+	- range: Range<Timestamp>
+}
+WorkStationTimestampParamValidator *--> Range: range

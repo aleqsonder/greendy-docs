@@ -1,0 +1,7 @@
+@startuml
+!include model/visitor-examples.iuml
+
+remove *
+restore $uc03
+
+@enduml

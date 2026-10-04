@@ -1,0 +1,129 @@
+class Order $uc03
+Order *--> OrderItem: items
+
+class OrderItem $uc03
+OrderItem o--> "1" Nomenclature: nomenclature
+
+class Nomenclature $uc03 {
+	- id: int
+	- name: string
+}
+Nomenclature o--> "{ordered}" WorkStationDecl: steps
+
+class WorkStationDecl $uc03 {
+	- id: int
+	- name: string
+}
+WorkStationDecl [name: string] *--> WorkStationParamInfo: paramInfos
+
+abstract class WorkStationParamInfo $uc03 {
+	- isMandatory: boolean
+	+ isMandatory(): boolean
+	+ accept(visitor: WorkStationParamInfoVisitor): void
+}
+WorkStationParamInfo ..> WorkStationParamInfoVisitor: <<use>>
+WorkStationParamInfo <|-- WorkStationBooleanParamInfo
+WorkStationParamInfo <|-- WorkStationNumericParamInfo
+WorkStationParamInfo <|-- WorkStationStringParamInfo
+WorkStationParamInfo <|-- WorkStationTimestampParamInfo
+
+interface WorkStationParamInfoVisitor $uc03 {
+	+ visitBoolean(isMandatory: boolean): void
+	+ visitNumber(isMandatory: boolean, range: Range<double>): void
+	+ visitString(isMandatory: boolean, pattern: Regex): void
+	+ visitTimestamp(isMandatory: boolean, range: Range<Timestamp>): void
+}
+WorkStationParamInfoVisitor ..> Range: <<use>>
+
+class Range<T> $uc03 {
+	- min: Border<T>
+	- max: Border<T>
+	+ includes(value: T): boolean
+}
+Range *--> "1" Border: min
+Range *--> "1" Border: max
+
+class Border<T> $uc03 {
+	- isInclusive: boolean
+	- value: T
+	+ checkLower(value: T): boolean
+	+ checkUpper(value: T): boolean
+}
+
+class WorkStationBooleanParamInfo $uc03
+
+class WorkStationNumericParamInfo $uc03 {
+	- range: Range<double>
+}
+WorkStationNumericParamInfo *--> Range: range
+
+class WorkStationStringParamInfo $uc03 {
+	- pattern: Regex
+}
+
+class WorkStationTimestampParamInfo $uc03 {
+	- range: Range<Timestamp>
+}
+WorkStationTimestampParamInfo *--> Range: range
+
+class TechMap $uc03 {
+	- customer: Customer
+	- creationTimestamp: Timestamp
+}
+TechMap *--> "1..*" OrderItemSubquantity : items
+TechMap *--> "{ordered}" TechStage : stages
+
+class OrderItemSubquantity $uc03 {
+	- quantity: int
+}
+OrderItemSubquantity o--> "1" OrderItem : originalItem
+
+class TechStage $uc03
+TechStage [name: string] *--> WorkStationParamValue: paramValues
+TechStage *-> "1" WorkStationBooking
+
+interface WorkStationParamValue $uc03 {
+	+ accept(visitor: WorkStationParamValueVisitor): void
+}
+WorkStationParamValue ..> WorkStationParamValueVisitor: <<use>>
+WorkStationParamValue <|-- WorkStationBooleanParamValue
+WorkStationParamValue <|-- WorkStationNumericParamValue
+WorkStationParamValue <|-- WorkStationStringParamValue
+WorkStationParamValue <|-- WorkStationTimestampParamValue
+
+interface WorkStationParamValueVisitor $uc03 {
+	+ visitNone(): void
+	+ visit(value: boolean): void
+	+ visit(value: double): void
+	+ visit(value: string): void
+	+ visit(value: Timestamp): void
+}
+
+class WorkStationBooleanParamValue $uc03 {
+	- value: boolean
+}
+
+class WorkStationNumericParamValue $uc03 {
+	- value: double
+}
+
+class WorkStationStringParamValue $uc03 {
+	- value: string
+}
+
+class WorkStationTimestampParamValue $uc03 {
+	- value: Timestamp
+}
+
+class WorkStationBooking $uc03 {
+	- id: int
+	- start: Timestamp
+	- finish: Timestamp
+}
+WorkStationBooking o--> "1" WorkStation
+
+class WorkStation $uc03 {
+	- id: int
+	- name: string
+}
+WorkStation o-> "1" WorkStationDecl
