@@ -22,207 +22,199 @@ skinparam note {
   BorderColor #C9B458
 }
 
+!define PK(x) <b><color:#B8860B><&key></color> x</b>
+!define FK(x) <color:#4B55B5><&link-intact></color> x
+!define PFK(x) <b><color:#B8860B><&key></color><color:#4B55B5><&link-intact></color> x</b>
+!define TABLE(name, desc) entity "<b>name</b>\n<size:10><i>desc</i></size>" as name
+
 ' ---------------- Users & access ----------------
-package "Users & access" #F2F2F2 {
-  entity roles {
-    * PK(id) : SERIAL
-    --
-    * name : VARCHAR(64) <<UQ>>
-    description : TEXT
-  }
+TABLE(roles, "User roles that define access rights") {
+  * PK(id) : SERIAL
+  --
+  * name : VARCHAR(64) <<UQ>>
+  description : TEXT
+}
 
-  entity app_users {
-    * PK(id) : BIGSERIAL
-    --
-    * login : VARCHAR(64) <<UQ>>
-    * password : VARCHAR(255)  -- hash
-    * salt : VARCHAR(64)
-    * name : VARCHAR(255)
-    * FK(role_id) : INTEGER
-    description : TEXT
-  }
+TABLE(app_users, "Application users (employees)") {
+  * PK(id) : BIGSERIAL
+  --
+  * login : VARCHAR(64) <<UQ>>
+  * password : VARCHAR(255)  -- hash
+  * salt : VARCHAR(64)
+  * name : VARCHAR(255)
+  * FK(role_id) : INTEGER
+  description : TEXT
+}
 
-  entity user_tokens {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(user_id) : BIGINT
-    * token_uuid : UUID <<UQ>>
-    name : VARCHAR(128)
-    * creation_date : TIMESTAMPTZ <<DF now()>>
-    * expiration_date : TIMESTAMPTZ
-    <<CK expiration_date > creation_date>>
-  }
+TABLE(user_tokens, "API access tokens issued to users") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(user_id) : BIGINT
+  * token_uuid : UUID <<UQ>>
+  name : VARCHAR(128)
+  * creation_date : TIMESTAMPTZ <<DF now()>>
+  * expiration_date : TIMESTAMPTZ
+  <<CK expiration_date > creation_date>>
 }
 
 ' ---------------- Customers & orders ----------------
-package "Customers & orders" #F2F2F2 {
-  entity customers {
-    * PK(id) : BIGSERIAL
-    --
-    * name : VARCHAR(255)
-    description : TEXT
-  }
+TABLE(customers, "Customers who place orders") {
+  * PK(id) : BIGSERIAL
+  --
+  * name : VARCHAR(255)
+  description : TEXT
+}
 
-  entity contact_types {
-    * PK(id) : SERIAL
-    --
-    * name : VARCHAR(64) <<UQ>>
-    regex : TEXT
-    description : TEXT
-  }
+TABLE(contact_types, "Dictionary of contact kinds with a value validation regex") {
+  * PK(id) : SERIAL
+  --
+  * name : VARCHAR(64) <<UQ>>
+  regex : TEXT
+  description : TEXT
+}
 
-  entity customer_contacts {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(customer_id) : BIGINT
-    * FK(contact_type_id) : INTEGER
-    name : VARCHAR(255)
-    * value : VARCHAR(512)
-  }
+TABLE(customer_contacts, "Contact details of a customer") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(customer_id) : BIGINT
+  * FK(contact_type_id) : INTEGER
+  name : VARCHAR(255)
+  * value : VARCHAR(512)
+}
 
-  entity orders {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(customer_id) : BIGINT
-    * FK(creator_id) : BIGINT
-    delivery_date : DATE
-    description : TEXT
-    * creation_timestamp : TIMESTAMPTZ <<DF now()>>
-  }
+TABLE(orders, "Customer production orders") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(customer_id) : BIGINT
+  * FK(creator_id) : BIGINT
+  delivery_date : DATE
+  description : TEXT
+  * creation_timestamp : TIMESTAMPTZ <<DF now()>>
+}
 
-  entity order_items {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(order_id) : BIGINT
-    * FK(nomenclature_id) : BIGINT
-    * quantity : NUMERIC(14,3) <<CK > 0>>
-    description : TEXT
-  }
+TABLE(order_items, "Order lines: product and quantity") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(order_id) : BIGINT
+  * FK(nomenclature_id) : BIGINT
+  * quantity : NUMERIC(14,3) <<CK > 0>>
+  description : TEXT
+}
 
-  entity nomenclatures {
-    * PK(id) : BIGSERIAL
-    --
-    * name : VARCHAR(255) <<UQ>>
-    description : TEXT
-  }
+TABLE(nomenclatures, "Products that can be manufactured") {
+  * PK(id) : BIGSERIAL
+  --
+  * name : VARCHAR(255) <<UQ>>
+  description : TEXT
 }
 
 ' ---------------- Technological maps ----------------
-package "Technological maps" #F2F2F2 {
-  entity techmaps {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(creator_id) : BIGINT
-    * creation_timestamp : TIMESTAMPTZ <<DF now()>>
-  }
+TABLE(techmaps, "Technological maps: production plans covering one or more order items") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(creator_id) : BIGINT
+  * creation_timestamp : TIMESTAMPTZ <<DF now()>>
+}
 
-  entity techmap_order_items {
-    * PFK(techmap_id) : BIGINT
-    * PFK(order_item_id) : BIGINT
-    --
-    * quantity : NUMERIC(14,3) <<CK > 0>>
-  }
+TABLE(techmap_order_items, "Part of an order item quantity allocated to a technological map") {
+  * PFK(techmap_id) : BIGINT
+  * PFK(order_item_id) : BIGINT
+  --
+  * quantity : NUMERIC(14,3) <<CK > 0>>
+}
 
-  entity recipe_stages {
-    * PK(id) : BIGSERIAL
-    --
-    * name : VARCHAR(255)
-    description : TEXT
-    * FK(nomenclature_id) : BIGINT
-    * FK(work_station_type_id) : INTEGER
-  }
+TABLE(recipe_stages, "Production stages of a product and the work station type each one needs") {
+  * PK(id) : BIGSERIAL
+  --
+  * name : VARCHAR(255)
+  description : TEXT
+  * FK(nomenclature_id) : BIGINT
+  * FK(work_station_type_id) : INTEGER
+}
 
-  entity techmap_stages {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(techmap_id) : BIGINT
-    * FK(recipe_stage_id) : BIGINT
-    * FK(work_station_booking_id) : BIGINT <<UQ>>
-    description : TEXT
-  }
+TABLE(techmap_stages, "Recipe stage instantiated in a map and scheduled on a work station") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(techmap_id) : BIGINT
+  * FK(recipe_stage_id) : BIGINT
+  * FK(work_station_booking_id) : BIGINT <<UQ>>
+  description : TEXT
+}
 
-  entity techmap_stage_param_values {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(techmap_stage_id) : BIGINT
-    * FK(work_station_param_id) : BIGINT
-    num_plan : NUMERIC(18,6)
-    num_min : NUMERIC(18,6)
-    num_max : NUMERIC(18,6)
-    string_value : TEXT
-    timestamp_value : TIMESTAMPTZ
-    <<UQ (techmap_stage_id, work_station_param_id)>>
-    <<CK num_min <= num_plan <= num_max>>
-  }
+TABLE(techmap_stage_param_values, "Setpoints of work station parameters for a map stage") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(techmap_stage_id) : BIGINT
+  * FK(work_station_param_id) : BIGINT
+  num_value : NUMERIC(18,6)
+  string_value : TEXT
+  timestamp_value : TIMESTAMPTZ
+  <<UQ (techmap_stage_id, work_station_param_id)>>
 }
 
 ' ---------------- Work stations ----------------
-package "Work stations" #F2F2F2 {
-  entity work_station_types {
-    * PK(id) : SERIAL
-    --
-    * name : VARCHAR(128) <<UQ>>
-    description : TEXT
-  }
+TABLE(work_station_types, "Dictionary of equipment types") {
+  * PK(id) : SERIAL
+  --
+  * name : VARCHAR(128) <<UQ>>
+  description : TEXT
+}
 
-  entity work_stations {
-    * PK(id) : BIGSERIAL
-    --
-    * name : VARCHAR(128) <<UQ>>
-    description : TEXT
-    * FK(type_id) : INTEGER
-    * is_available : BOOLEAN <<DF true>>
-  }
+TABLE(work_stations, "Equipment units of the plant") {
+  * PK(id) : BIGSERIAL
+  --
+  * name : VARCHAR(128) <<UQ>>
+  description : TEXT
+  * FK(type_id) : INTEGER
+  * is_available : BOOLEAN <<DF true>>
+}
 
-  entity work_station_bookings {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(work_station_id) : BIGINT
-    description : TEXT
-    * FK(creator_id) : BIGINT
-    * start_timestamp : TIMESTAMPTZ
-    * finish_timestamp : TIMESTAMPTZ
-    <<CK finish_timestamp > start_timestamp>>
-  }
+TABLE(work_station_bookings, "Time slots reserved on a work station") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(work_station_id) : BIGINT
+  description : TEXT
+  * FK(creator_id) : BIGINT
+  * start_timestamp : TIMESTAMPTZ
+  * finish_timestamp : TIMESTAMPTZ
+  <<CK finish_timestamp > start_timestamp>>
+}
 
-  entity work_station_param_types {
-    * PK(id) : SERIAL
-    --
-    * name : VARCHAR(32) <<UQ>>
-    description : TEXT
-  }
+TABLE(work_station_param_types, "Dictionary of parameter data types") {
+  * PK(id) : SERIAL
+  --
+  * name : VARCHAR(32) <<UQ>>
+  description : TEXT
+}
 
-  entity work_station_params {
-    * PK(id) : BIGSERIAL
-    --
-    * name : VARCHAR(128)
-    description : TEXT
-    * FK(work_station_type_id) : INTEGER
-    * FK(param_type_id) : INTEGER
-    <<UQ (work_station_type_id, name)>>
-  }
+TABLE(work_station_params, "Parameters supported by a work station type") {
+  * PK(id) : BIGSERIAL
+  --
+  * name : VARCHAR(128)
+  description : TEXT
+  * FK(work_station_type_id) : INTEGER
+  * FK(param_type_id) : INTEGER
+  <<UQ (work_station_type_id, name)>>
 }
 
 ' ---------------- Telemetry & alerts ----------------
-package "Telemetry & alerts" #F2F2F2 {
-  entity telemetry_items {
-    * PK(id) : BIGSERIAL
-    --
-    * measurement_timestamp : TIMESTAMPTZ
-    * FK(techmap_stage_param_id) : BIGINT
-    * num_value : DOUBLE PRECISION
-  }
+TABLE(telemetry_items, "Parameter values measured on work stations") {
+  * PK(id) : BIGSERIAL
+  --
+  * measurement_timestamp : TIMESTAMPTZ
+  * FK(techmap_stage_param_id) : BIGINT
+  * num_value : DOUBLE PRECISION
+}
 
-  entity alerts {
-    * PK(id) : BIGSERIAL
-    --
-    * FK(telemetry_item_id) : BIGINT
-  }
+TABLE(alerts, "Alerts raised by telemetry deviating from the setpoint") {
+  * PK(id) : BIGSERIAL
+  --
+  * FK(telemetry_item_id) : BIGINT
+}
 
-  entity alert_unread_by {
-    * PFK(alert_id) : BIGINT
-    * PFK(app_user_id) : BIGINT
-  }
+TABLE(alert_unread_by, "Users who have not read an alert yet") {
+  * PFK(alert_id) : BIGINT
+  * PFK(app_user_id) : BIGINT
 }
 
 ' ================= Foreign keys =================
