@@ -23,140 +23,128 @@ skinparam note {
 }
 
 ' ---------------- Access control ----------------
-package "Users & access" #F2F2F2 {
-  entity "Role" as Role {
-    name
-    --
-    description
-  }
+entity "Role" as Role {
+  name
+  --
+  description
+}
 
-  entity "User" as User {
-    login
-    --
-    password (hashed, salted)
-    full name
-    description
-  }
+entity "User" as User {
+  login
+  --
+  password (hashed, salted)
+  full name
+  description
+}
 
-  entity "Access token" as Token {
-    token UUID
-    --
-    name
-    creation date
-    expiration date
-  }
+entity "Access token" as Token {
+  token UUID
+  --
+  name
+  creation date
+  expiration date
 }
 
 ' ---------------- Customers & orders ----------------
-package "Customers & orders" #F2F2F2 {
-  entity "Customer" as Customer {
-    name
-    --
-    description
-  }
+entity "Customer" as Customer {
+  name
+  --
+  description
+}
 
-  entity "Contact type" as ContactType {
-    name
-    --
-    validation pattern (regex)
-    description
-  }
+entity "Contact type" as ContactType {
+  name
+  --
+  validation pattern (regex)
+  description
+}
 
-  entity "Customer contact" as Contact {
-    name
-    value
-  }
+entity "Customer contact" as Contact {
+  name
+  value
+}
 
-  entity "Order" as Order {
-    creation time
-    delivery date
-    description
-  }
+entity "Order" as Order {
+  creation time
+  delivery date
+  description
+}
 
-  entity "Order item" as OrderItem {
-    quantity
-    description
-  }
+entity "Order item" as OrderItem {
+  quantity
+  description
+}
 
-  entity "Nomenclature\n(product)" as Nomenclature {
-    name
-    --
-    description
-  }
+entity "Nomenclature\n(product)" as Nomenclature {
+  name
+  --
+  description
 }
 
 ' ---------------- Production planning ----------------
-package "Technological maps" #F2F2F2 {
-  entity "Technological map" as TechMap {
-    creation time
-  }
+entity "Technological map" as TechMap {
+  creation time
+}
 
-  entity "Order item allocation" as Allocation {
-    allocated quantity
-  }
+entity "Order item allocation" as Allocation {
+  allocated quantity
+}
 
-  entity "Recipe stage" as RecipeStage {
-    name
-    --
-    description
-  }
+entity "Recipe stage" as RecipeStage {
+  name
+  --
+  description
+}
 
-  entity "Technological map stage" as TechMapStage {
-    description
-  }
+entity "Technological map stage" as TechMapStage {
+  description
+}
 
-  entity "Stage parameter setpoint" as ParamValue {
-    planned value
-    minimum value
-    maximum value
-    string value
-    timestamp value
-  }
+entity "Stage parameter setpoint" as ParamValue {
+  numeric value
+  string value
+  timestamp value
 }
 
 ' ---------------- Equipment ----------------
-package "Work stations" #F2F2F2 {
-  entity "Work station type" as WSType {
-    name
-    --
-    description
-  }
+entity "Work station type" as WSType {
+  name
+  --
+  description
+}
 
-  entity "Work station" as WorkStation {
-    name
-    --
-    description
-    availability flag
-  }
+entity "Work station" as WorkStation {
+  name
+  --
+  description
+  availability flag
+}
 
-  entity "Work station booking" as Booking {
-    start time
-    finish time
-    description
-  }
+entity "Work station booking" as Booking {
+  start time
+  finish time
+  description
+}
 
-  entity "Work station parameter" as WSParam {
-    name
-    --
-    description
-  }
+entity "Work station parameter" as WSParam {
+  name
+  --
+  description
+}
 
-  entity "Parameter data type" as ParamType {
-    name
-    --
-    description
-  }
+entity "Parameter data type" as ParamType {
+  name
+  --
+  description
 }
 
 ' ---------------- Monitoring ----------------
-package "Telemetry & alerts" #F2F2F2 {
-  entity "Telemetry reading" as Telemetry {
-    measurement time
-    measured value
-  }
+entity "Telemetry reading" as Telemetry {
+  measurement time
+  measured value
+}
 
-  entity "Alert" as Alert {
-  }
+entity "Alert" as Alert {
 }
 
 ' ================= Relationships =================
